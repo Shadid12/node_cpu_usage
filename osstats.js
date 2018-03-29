@@ -3,7 +3,6 @@ import os from 'os';
 export default class OsStats {
     constructor() {
     }
-
     /**
      * Function to get Avg CPU 
      */
@@ -37,43 +36,47 @@ export default class OsStats {
         }
     }
 
-    /**
-     * @argument time
-     * @return Promise 
-     * wrapper function to get CPU average after certain time 
-     * 
-     */
-    getEndCpuUsage(time) {
-        return new Promise((resolve, reject) => {
-            setTimeout(() => {
-                console.log('First promise loading');
-                let end = this.getCpuAvg(); // get end measure
-                if (end) {
-                    resolve(end);
-                } else {
-                    reject(Error("Could not calculate data"));
-                }
-            }, time)
-        })
+    cpuLoad( avgTime, msg ) {
+
+        this.samples = [];
+        this.samples[1] = this.getCpuAvg();
+
+        setInterval((cb) => {
+
+            this.samples[0] = this.samples[1];
+            this.samples[1] = this.getCpuAvg();
+
+            let totalDiff = this.samples[1].total - this.samples[0].total;
+            let idleDiff = this.samples[1].idle - this.samples[0].idle;
+
+            let ret = 1 - (idleDiff / totalDiff);
+
+            console.log(msg, ret * 100);
+
+        }, avgTime);
     }
 
-    getCpuUsage() {
-        let start =  this.getCpuAvg(); // get first measure
-        this.getEndCpuUsage(100)
-            .then((end) => {
-                console.log("Promise returned");
-                let idleDiff = end.idle - start.idle;
-                let totalDiff = end.total - start.total;
+    // cpuLoad( avgTime ) {
+    //     return new Promise((resolve, reject) => { 
+    //         this.samples = [];
+    //         this.samples[1] = this.getCpuAvg();
+    //         setTimeout( () => {
+    //             this.samples[0] = this.samples[1];
+    //             this.samples[1] = this.getCpuAvg();
 
-                let percentCpuUsage = 100 - ~~(100 * idleDiff / totalDiff);
-                console.log('CPU USAGE %', percentCpuUsage);
-                return {
-                    percentCpuUsage : percentCpuUsage
-                };
-            }).catch(() => {
-                return {
-                    error: 'could not calculate'
-                }
-            });
-    }
+    //             let totalDiff = this.samples[1].total - this.samples[0].total;
+    //             let idleDiff = this.samples[1].idle - this.samples[0].idle;
+                
+    //             let ret = 1 - (idleDiff / totalDiff);
+
+    //             if (ret) {
+    //                 console.log('From Google', os.loadavg());
+    //                 resolve(ret);
+    //             } else {
+    //                 reject('Error');
+    //             }
+
+    //         }, avgTime)
+    //     });
+    // }
 }

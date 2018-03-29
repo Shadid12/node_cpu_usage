@@ -2,4 +2,6 @@ import OsStats from './osstats';
 
 const oStats = new OsStats();
 
-console.log('My method', oStats.getCpuUsage());
+oStats.cpuLoad(1000, "Current:");
+
+oStats.cpuLoad(10000, "10s --- interval ---> ");
