@@ -1,9 +1,9 @@
 import os from 'os';
+import _ from 'lodash';
 
 export default class OsStats {
     constructor() {
         this.arrayOfData = [];
-        const ONE_MINUTE = 60;
     }
     /**
      * Function to get Avg CPU 
@@ -38,7 +38,7 @@ export default class OsStats {
         }
     }
 
-    starMonitor( avgTime, msg,  ) {
+    starMonitor( verbose ) {
         this.samples = [];
         this.samples[1] = this.getCpuAvg();
         
@@ -54,24 +54,57 @@ export default class OsStats {
             let memory   = ( 1 - ( os.freemem() / os.totalmem() )) * 100;
 
             let o = {memory: memory, cpu: cpu_perc }
-            if ( this.arrayOfData.length == 10) {
-                this.arrayOfData.shift();
+            if ( this.arrayOfData.length == 900) { // 900 seconds == 15 mins. We record every seconds to maximum 900 seconds
+                this.arrayOfData.shift();          // When max length is hit we delete the oldest element in array and track latest from there
             }
             this.arrayOfData.push(o);
-            // if verbose on start outputting current CPU and Memory logs
-            if (msg === 'v' || msg === 'verbose') {
+            // if verbose enabled start outputting current CPU and Memory logs
+            if (verbose == true) {
                 console.log(o);
             }
 
-        }, avgTime);
+        }, 1000);
     }
 
     /**
-     * @argument n
+     * @argument n in seconds 
      * @returns  number
      * This method returns memory usage in the previous {n} mins
      */
     getMemoryUsage(n) {
-        
+        this.setDelay(n).then((e) => {
+            if(e) {
+                let temp = this.arrayOfData;
+                temp = _.reverse(temp);
+                let retArray = _.slice(temp, 0, n);
+                let totalMemoryUsed = 0;
+                for (let i = 0; i < retArray.length; i ++){
+                    totalMemoryUsed = totalMemoryUsed + retArray[i].memory; 
+                }
+                console.log(totalMemoryUsed / retArray.length);
+            }
+        }).catch(() => {
+            console.log('Something wrong with the array operations');
+        });
+    }
+
+    setDelay(n) {
+        return new Promise((resolve, reject) => {
+            setTimeout(() => {
+                resolve(true)
+            }, (n * 1000) + 2000 );
+        })
     }
 }
+
+
+// return new Promise((resolve, reject) => {
+//     if( n < this.arrayOfData.length ) {
+//         let last_n_min_data = this.arrayOfData(Math.max( this.arrayOfData.length - n, 1));
+//         resolve(last_n_min_data);
+//     }else{
+//         reject("Data not available, make sure you monitor is running");
+//     }
+// }).catch(()=>{
+//     console.log("Something went wrong");
+// });
