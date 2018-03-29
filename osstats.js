@@ -2,6 +2,8 @@ import os from 'os';
 
 export default class OsStats {
     constructor() {
+        this.arrayOfData = [];
+        const ONE_MINUTE = 60;
     }
     /**
      * Function to get Avg CPU 
@@ -36,12 +38,11 @@ export default class OsStats {
         }
     }
 
-    cpuLoad( avgTime, msg ) {
-
+    starMonitor( avgTime, msg,  ) {
         this.samples = [];
         this.samples[1] = this.getCpuAvg();
-
-        setInterval((cb) => {
+        
+        setInterval(() => {
 
             this.samples[0] = this.samples[1];
             this.samples[1] = this.getCpuAvg();
@@ -49,34 +50,28 @@ export default class OsStats {
             let totalDiff = this.samples[1].total - this.samples[0].total;
             let idleDiff = this.samples[1].idle - this.samples[0].idle;
 
-            let ret = 1 - (idleDiff / totalDiff);
+            let cpu_perc = ( 1 - (idleDiff / totalDiff) ) * 100;
+            let memory   = ( 1 - ( os.freemem() / os.totalmem() )) * 100;
 
-            console.log(msg, ret * 100);
+            let o = {memory: memory, cpu: cpu_perc }
+            if ( this.arrayOfData.length == 10) {
+                this.arrayOfData.shift();
+            }
+            this.arrayOfData.push(o);
+            // if verbose on start outputting current CPU and Memory logs
+            if (msg === 'v' || msg === 'verbose') {
+                console.log(o);
+            }
 
         }, avgTime);
     }
 
-    // cpuLoad( avgTime ) {
-    //     return new Promise((resolve, reject) => { 
-    //         this.samples = [];
-    //         this.samples[1] = this.getCpuAvg();
-    //         setTimeout( () => {
-    //             this.samples[0] = this.samples[1];
-    //             this.samples[1] = this.getCpuAvg();
-
-    //             let totalDiff = this.samples[1].total - this.samples[0].total;
-    //             let idleDiff = this.samples[1].idle - this.samples[0].idle;
-                
-    //             let ret = 1 - (idleDiff / totalDiff);
-
-    //             if (ret) {
-    //                 console.log('From Google', os.loadavg());
-    //                 resolve(ret);
-    //             } else {
-    //                 reject('Error');
-    //             }
-
-    //         }, avgTime)
-    //     });
-    // }
+    /**
+     * @argument n
+     * @returns  number
+     * This method returns memory usage in the previous {n} mins
+     */
+    getMemoryUsage(n) {
+        
+    }
 }
