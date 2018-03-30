@@ -9,4 +9,18 @@ Getting Started
  `npm install -g babel-cli`
  
  Get Dependencies `npm install`
- Start Script `npm start`
+ Start Script by running `npm start`
+
+> Usage
+
+you can import this module by 
+
+`import OStats from './ostats';`
+`stats.start();`
+
+To get cpu usage for last 5 mins or 300 seconds 
+`stats.getCpuLast(300);`
+
+To get memory usage for last 5 mins or 300 seconds 
+`stats.getMemLast(300);`
+

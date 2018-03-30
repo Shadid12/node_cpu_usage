@@ -108,25 +108,15 @@ export default class OsStats {
      */
     getCpuUsage(n) {
         return new Promise((resolve, reject) => {
-
-            this.setTimer(n).then((e) => {
-                if(e) {
-                    let temp = _.reverse(this.arrayOfData);
-                    temp = _.slice(temp, 0, n);
-                    let totalCpuUsed = 0;
-                    for (let i = 0; i < temp.length; i ++){
-                        totalCpuUsed = totalCpuUsed + temp[i].cpu; 
-                    }
-                    console.log(totalCpuUsed / temp.length);
-                    resolve(true);
-                }
-                else {
-                    reject('Cannot fetch');
-                }
-            }).catch(()=> {
-                console.log('Error');
-            });
-
+                
+            let temp = _.reverse(this.arrayOfData);
+            temp = _.slice(temp, 0, n);
+            let totalCpuUsed = 0;
+            for (let i = 0; i < temp.length; i ++){
+                totalCpuUsed = totalCpuUsed + temp[i].cpu; 
+            }
+            console.log(totalCpuUsed / temp.length);
+            resolve(true);
         })
     }
 }
