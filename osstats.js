@@ -38,7 +38,7 @@ export default class OsStats {
         }
     }
 
-    starMonitor( verbose ) {
+    startMonitor( verbose ) {
         this.samples = [];
         this.samples[1] = this.getCpuAvg();
         
@@ -67,12 +67,12 @@ export default class OsStats {
     }
 
     /**
-     * @argument n in seconds 
-     * @returns  number
+     * @argument {int} n seconds 
+     * @returns  float
      * This method returns memory usage in the previous {n} mins
      */
     getMemoryUsage(n) {
-        this.setDelay(n).then((e) => {
+        this.setTimer(n).then((e) => {
             if(e) {
                 let temp = this.arrayOfData;
                 temp = _.reverse(temp);
@@ -88,23 +88,45 @@ export default class OsStats {
         });
     }
 
-    setDelay(n) {
+    /**
+     * Wrapper function to set time constrain
+     * @param {int} n  
+     */
+    setTimer(n) {
         return new Promise((resolve, reject) => {
             setTimeout(() => {
                 resolve(true)
             }, (n * 1000) + 2000 );
         })
     }
+
+    /**
+     * 
+     * @param {int} n seconds
+     * @returns float
+     * This function returns the percentage of avg cpu used in a given period
+     */
+    getCpuUsage(n) {
+        return new Promise((resolve, reject) => {
+
+            this.setTimer(n).then((e) => {
+                if(e) {
+                    let temp = _.reverse(this.arrayOfData);
+                    temp = _.slice(temp, 0, n);
+                    let totalCpuUsed = 0;
+                    for (let i = 0; i < temp.length; i ++){
+                        totalCpuUsed = totalCpuUsed + temp[i].cpu; 
+                    }
+                    console.log(totalCpuUsed / temp.length);
+                    resolve(true);
+                }
+                else {
+                    reject('Cannot fetch');
+                }
+            }).catch(()=> {
+                console.log('Error');
+            });
+
+        })
+    }
 }
-
-
-// return new Promise((resolve, reject) => {
-//     if( n < this.arrayOfData.length ) {
-//         let last_n_min_data = this.arrayOfData(Math.max( this.arrayOfData.length - n, 1));
-//         resolve(last_n_min_data);
-//     }else{
-//         reject("Data not available, make sure you monitor is running");
-//     }
-// }).catch(()=>{
-//     console.log("Something went wrong");
-// });
